@@ -1,0 +1,127 @@
+{# templates/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Blog Tech | Symfony{% endblock %}
+
+{% block body %}
+    <!-- En-tête du blog -->
+    <header class="main-header">
+        <div class="container text-center">
+            <h1 class="blog-title">Blog Tech</h1>
+            <p class="blog-subtitle">Le monde du développement web moderne</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="row g-5">
+            <!-- Colonne de contenu principal -->
+            <div class="col-lg-8">
+                <!-- Article vedette -->
+                <div class="featured-post mb-5">
+                    <article class="post-card">
+                        <div class="post-thumbnail">
+                            <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article principal" class="post-image">
+                        </div>
+                        <div class="post-content">
+                            <div class="post-meta">
+                                <span class="post-date">15 Mars 2024</span>
+                                <span class="post-author">Par Jean Dupont</span>
+                            </div>
+                            <h2 class="post-title">Les meilleures pratiques en Symfony</h2>
+                            <p class="post-excerpt">Découvrez les bonnes pratiques pour développer des applications robustes avec Symfony et PHP 8.3...</p>
+                            <a href="#" class="post-read-more">Lire l'article →</a>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Titre de section pour les articles récents -->
+                <h2 class="section-title mb-4">Articles récents</h2>
+                
+                <!-- Grille d'articles -->
+               <div class="row post-grid">
+    {% for article in articles %}
+        <div class="col-md-3 mb-4">
+            <article class="post-card h-100">
+<img src="{{ article.image }}" alt="{{ article.title }}" class="post-image">
+                <div class="post-content">
+                    <h3 class="post-title">{{ article.title }}</h3>
+                    <p class="post-excerpt">{{ (article.content|slice(0, 150) ~ '...')|raw }}</p>
+                <a href="{{ path('article_show', {'slug': article.slug}) }}">Lire plus</a>
+                </div>
+            </article>
+        </div>
+    {% endfor %}
+</div>
+
+                <!-- Pagination -->
+                <nav class="pagination-wrapper">
+                    <ul class="pagination">
+                        <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a></li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="col-lg-4">
+                <!-- Recherche -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title"><i class="fas fa-search"></i> Recherche</h3>
+                    <form class="search-form">
+                        <div class="input-group">
+                            <input type="search" class="form-control" placeholder="Rechercher...">
+                            <button class="btn btn-search" type="submit"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Catégories -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title"><i class="fas fa-folder-open"></i> Catégories</h3>
+                    <ul class="category-list">
+                        <li><a href="#"><i class="fas fa-code"></i> Symfony</a></li>
+                        <li><a href="#"><i class="fab fa-php"></i> PHP</a></li>
+                        <li><a href="#"><i class="fab fa-js"></i> JavaScript</a></li>
+                        <li><a href="#"><i class="fab fa-css3"></i> CSS</a></li>
+                    </ul>
+                </div>
+
+                <!-- Articles populaires -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title"><i class="fas fa-fire"></i> Articles populaires</h3>
+                    <div class="popular-posts">
+                        <div class="mini-post">
+                            <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article populaire" class="mini-post-image">
+                            <div class="mini-post-content">
+                                <h4 class="mini-post-title">Optimisation des performances</h4>
+                                <span class="mini-post-date">10 Mars 2024</span>
+                            </div>
+                        </div>
+                        <div class="mini-post">
+                            <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article populaire" class="mini-post-image">
+                            <div class="mini-post-content">
+                                <h4 class="mini-post-title">Design patterns en PHP</h4>
+                                <span class="mini-post-date">2 Mars 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- À propos -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title"><i class="fas fa-user"></i> À propos</h3>
+                    <p class="about-text">Développeur passionné par les technologies web modernes et le partage de connaissances.</p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p class="copyright">&copy; 2024 Blog Tech. Tous droits réservés.</p>
+        </div>
+    </footer>
+{% endblock %}

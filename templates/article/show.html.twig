@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('article') }} {# Charge le fichier CSS spécifique à cette page #}
+{% endblock %}
+
+{% block body %}
+<article class="article-container">
+    <header class="article-header">
+        <div class="article-image">
+    <img src="{{ article.image }}" alt="{{ article.title }}" class="post-image">
+        </div>
+        <h1 class="article-title">{{ article.title }}</h1>
+        <div class="article-meta">
+            <span class="article-date">Publié le {{ article.createdAt|date('d/m/Y') }}</span>
+            {% if article.updatedAt %}
+                <span class="article-date">Mis à jour le {{ article.updatedAt|date('d/m/Y') }}</span>
+            {% endif %}
+            <span class="article-author">par {{ article.author.email }}</span>
+            <span class="article-category">Catégorie : {{ article.category }}</span>
+        </div>
+    </header>
+
+    <div class="article-content">
+        {{ article.content|raw }}
+    </div>
+
+    <footer class="article-footer">
+        <p>Merci d'avoir lu cet article. Découvrez plus de contenu dans la catégorie "{{ article.category }}" !</p>
+        <a href="#" class="btn btn-primary">Voir plus d'articles</a>
+    </footer>
+</article>
+{% endblock %}

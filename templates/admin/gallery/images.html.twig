@@ -1,0 +1,22 @@
+{# templates/admin/gallery/images.html.twig #}
+<div class="gallery-images">
+    {% if field.value|length > 0 %}
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            {% for image in field.value %}
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="{{ image.image }}" class="card-img-top" alt="{{ image.caption }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ image.caption }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">Ajoutée le {{ image.createdAt ? image.createdAt|date('d/m/Y H:i') : 'N/A' }}</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">Aucune image dans cette galerie</p>
+    {% endif %}
+</div>
