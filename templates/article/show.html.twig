@@ -1,36 +1,147 @@
+{# templates/article/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ article.title }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    {{ encore_entry_link_tags('article') }} {# Charge le fichier CSS spécifique à cette page #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
 {% block body %}
-<article class="article-container">
-    <header class="article-header">
-        <div class="article-image">
-    <img src="{{ article.image }}" alt="{{ article.title }}" class="post-image">
+<div class="article-container">
+    <article>
+        <header class="article-header">
+            <div class="article-image">
+                <img src="{{ article.image }}" alt="{{ article.title }}">
+            </div>
+            <h1 class="article-title">{{ article.title }}</h1>
+            <div class="article-meta">
+                <span>
+                    <i class="far fa-calendar-alt"></i> Publié le {{ article.createdAt|date('d/m/Y') }}
+                </span>
+                {% if article.updatedAt %}
+                    <span>
+                        <i class="fas fa-sync-alt"></i> Mis à jour le {{ article.updatedAt|date('d/m/Y') }}
+                    </span>
+                {% endif %}
+                <span>
+                    <i class="far fa-user"></i> par {{ article.author.nom ?? article.author.email }}
+                </span>
+                {% if article.category %}
+                    <span>
+                        <i class="far fa-folder"></i> {{ article.category }}
+                    </span>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="article-content">
+            {{ article.content|raw }}
         </div>
-        <h1 class="article-title">{{ article.title }}</h1>
-        <div class="article-meta">
-            <span class="article-date">Publié le {{ article.createdAt|date('d/m/Y') }}</span>
-            {% if article.updatedAt %}
-                <span class="article-date">Mis à jour le {{ article.updatedAt|date('d/m/Y') }}</span>
+
+       
+
+        {# Section des commentaires #}
+        <section class="comments-section">
+            <h2 class="comments-title">
+                Commentaires <span class="comments-count">({{ article.comments|length }})</span>
+            </h2>
+            
+            {# Afficher les messages flash #}
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            
+            {# Liste des commentaires #}
+            {% if article.comments|length > 0 %}
+                <div class="comments-list">
+                    {% for comment in article.comments|sort((b, a) => a.createdAt <=> b.createdAt) %}
+                        <div class="comment">
+                            <div class="comment-header">
+                                <div class="comment-author">{{ comment.author }}</div>
+                                <div class="comment-date">
+                                    <i class="far fa-clock"></i> 
+                                    {{ comment.createdAt|date('d/m/Y à H:i') }}
+                                </div>
+                            </div>
+                            <div class="comment-content">
+                                {{ comment.content|nl2br }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-comments">
+                    Soyez le premier à commenter cet article !
+                </div>
             {% endif %}
-            <span class="article-author">par {{ article.author.email }}</span>
-            <span class="article-category">Catégorie : {{ article.category }}</span>
+            
+            {# Formulaire de commentaire #}
+            {% if app.user %}
+                <div class="comment-form-container">
+                    <h3 class="comment-form-title">Laisser un commentaire</h3>
+                    
+                    {{ form_start(commentForm, {'attr': {'class': 'comment-form'}}) }}
+                        <div class="form-group">
+                            {{ form_label(commentForm.content) }}
+                            {{ form_widget(commentForm.content, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(commentForm.content) }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Publier le commentaire
+                        </button>
+                    {{ form_end(commentForm) }}
+                </div>
+            {% else %}
+                <div class="comment-form-container">
+                    <p>Vous devez être <a href="{{ path('app_login') }}">connecté</a> pour laisser un commentaire.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        {# Navigation entre articles #}
+        <div class="article-navigation">
+            <div class="prev">
+                {% if prev_article is defined and prev_article %}
+                    <a href="{{ path('article_show', {'slug': prev_article.slug}) }}">
+                        <i class="fas fa-chevron-left"></i> Article précédent
+                    </a>
+                {% endif %}
+            </div>
+            <div class="next">
+                {% if next_article is defined and next_article %}
+                    <a href="{{ path('article_show', {'slug': next_article.slug}) }}">
+                        Article suivant <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% endif %}
+            </div>
         </div>
-    </header>
 
-    <div class="article-content">
-        {{ article.content|raw }}
-    </div>
+        {# Partage social #}
+        <div class="social-share">
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ url('article_show', {'slug': article.slug})|url_encode }}" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://twitter.com/intent/tweet?text={{ article.title|url_encode }}&url={{ url('article_show', {'slug': article.slug})|url_encode }}" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ url('article_show', {'slug': article.slug})|url_encode }}" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </div>
 
-    <footer class="article-footer">
-        <p>Merci d'avoir lu cet article. Découvrez plus de contenu dans la catégorie "{{ article.category }}" !</p>
-        <a href="#" class="btn btn-primary">Voir plus d'articles</a>
-    </footer>
-</article>
+        <footer class="article-footer">
+            <p>Merci d'avoir lu cet article. Découvrez plus de contenu similaire dans notre blog !</p>
+            <a href="{{ path('app_home') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Retour à l'accueil
+            </a>
+        </footer>
+    </article>
+</div>
 {% endblock %}

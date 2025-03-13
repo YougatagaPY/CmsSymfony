@@ -29,6 +29,15 @@ class Article
     #[ORM\Column(type: 'text')]
     private ?string $content = null;
 
+    #[ORM\ManyToOne(targetEntity: Image::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Image $selectedImage = null;
+
+    private ?Gallery $gallerySelector = null;
+
+
+    
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -46,6 +55,37 @@ class Article
     private ?string $image = null;
 
     private ?UploadedFile $imageFile = null;
+
+
+        /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setArticle($this);
+        }
+        
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getArticle() === $this) {
+                $comment->setArticle(null);
+            }
+        }
+        
+        return $this;
+    }
 
     public function __construct()
     {
@@ -83,6 +123,19 @@ class Article
     public function setSlug(string $slug): self
     {
         $this->slug = $slug;
+        return $this;
+    }
+
+    
+
+    public function getSelectedImage(): ?Image
+    {
+        return $this->selectedImage;
+    }
+
+    public function setSelectedImage(?Image $selectedImage): self
+    {
+        $this->selectedImage = $selectedImage;
         return $this;
     }
 

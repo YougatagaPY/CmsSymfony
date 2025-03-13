@@ -35,6 +35,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $nom = null;
+
     /**
      * @var Collection<int, Article>
      */
@@ -60,6 +63,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->email = $email;
 
+        return $this;
+    }
+
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+    
+    public function setNom(?string $nom): static
+    {
+        $this->nom = $nom;
+        
         return $this;
     }
 

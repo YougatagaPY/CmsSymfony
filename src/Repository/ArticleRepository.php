@@ -27,6 +27,30 @@ class ArticleRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    // Dans src/Repository/ArticleRepository.php
+
+    public function findPreviousArticle($article)
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.id < :id')
+            ->setParameter('id', $article->getId())
+            ->orderBy('a.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findNextArticle($article)
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.id > :id')
+            ->setParameter('id', $article->getId())
+            ->orderBy('a.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * @return Article[] Returns articles filtered by category
      */

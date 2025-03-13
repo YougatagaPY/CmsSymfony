@@ -20,6 +20,11 @@ class Comment
     #[ORM\Column(type: Types::TEXT)]
     private ?string $content = null;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $user = null;
+    
+
     #[ORM\Column]
     private ?\DateTimeImmutable $CreatedAt = null;
 
@@ -29,6 +34,17 @@ class Comment
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+        return $this;
     }
 
     public function getAuthor(): ?string
