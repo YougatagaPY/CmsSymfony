@@ -17,10 +17,17 @@
             <nav class="navbar">
                 <div class="logo">Mon Blog</div>
                 <ul class="nav-links">
-                    <li><a href="">Accueil</a></li>
-                    <li><a href="">Articles</a></li>
-                    <li><a href="">À propos</a></li>
-                    <li><a href="">Contact</a></li>
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    
+                    {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+                        <li><a href="{{ path('app_logout') }}">Déconnexion</a></li>
+                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_REDACTEUR') %}
+                            <li><a href="{{ path('dashboard') }}">Administration</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li><a href="{{ path('app_login') }}">Connexion</a></li>
+                        <li><a href="{{ path('app_register') }}">Inscription</a></li>
+                    {% endif %}
                 </ul>
                 <div class="burger" onclick="toggleMenu()">
                     <div class="line1"></div>

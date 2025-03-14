@@ -18,12 +18,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class CommentCrudController extends AbstractCrudController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private AdminUrlGenerator $adminUrlGenerator
+        private AdminUrlGenerator $adminUrlGenerator,
+        private Security $security
     ) {}
 
     public static function getEntityFqcn(): string
@@ -58,12 +60,16 @@ class CommentCrudController extends AbstractCrudController
     {
         $approveAction = Action::new('approve', 'Approuver')
             ->linkToCrudAction('approveComment')
-            ->displayIf(fn(Comment $comment) => $comment->getStatus() !== Comment::STATUS_APPROVED)
+            ->displayIf(function(Comment $comment) {
+                return $this->security->isGranted('ROLE_ADMIN') && $comment->getStatus() !== Comment::STATUS_APPROVED;
+            })
             ->addCssClass('btn btn-success');
 
         $rejectAction = Action::new('reject', 'Rejeter')
             ->linkToCrudAction('rejectComment')
-            ->displayIf(fn(Comment $comment) => $comment->getStatus() !== Comment::STATUS_REJECTED)
+            ->displayIf(function(Comment $comment) {
+                return $this->security->isGranted('ROLE_ADMIN') && $comment->getStatus() !== Comment::STATUS_REJECTED;
+            })
             ->addCssClass('btn btn-danger');
 
         return $actions
@@ -95,6 +101,18 @@ class CommentCrudController extends AbstractCrudController
      */
     public function approveComment(AdminContext $context): RedirectResponse
     {
+        // Vérifier que seul l'admin peut exécuter cette action
+        if (!$this->security->isGranted('ROLE_ADMIN')) {
+            $this->addFlash('danger', 'Seuls les administrateurs peuvent approuver les commentaires.');
+            
+            $url = $this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction(Action::INDEX)
+                ->generateUrl();
+                
+            return $this->redirect($url);
+        }
+        
         /** @var Comment $comment */
         $comment = $context->getEntity()->getInstance();
         
@@ -116,6 +134,18 @@ class CommentCrudController extends AbstractCrudController
      */
     public function rejectComment(AdminContext $context): RedirectResponse
     {
+        // Vérifier que seul l'admin peut exécuter cette action
+        if (!$this->security->isGranted('ROLE_ADMIN')) {
+            $this->addFlash('danger', 'Seuls les administrateurs peuvent rejeter les commentaires.');
+            
+            $url = $this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction(Action::INDEX)
+                ->generateUrl();
+                
+            return $this->redirect($url);
+        }
+        
         /** @var Comment $comment */
         $comment = $context->getEntity()->getInstance();
         

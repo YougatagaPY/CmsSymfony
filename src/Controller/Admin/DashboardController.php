@@ -22,9 +22,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 #[Route('/admin', name: 'admin')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 class DashboardController extends AbstractDashboardController
 {
     public function __construct(
@@ -40,6 +42,12 @@ class DashboardController extends AbstractDashboardController
 
     public function index(): Response
     {
+        // Vérifier si l'utilisateur a les rôles requis
+        $user = $this->security->getUser();
+        if (!$user || (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_REDACTEUR'))) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits suffisants pour accéder à cette page.');
+        }
+        
         // Récupérer les statistiques
         $pendingComments = $this->commentRepository->countPendingComments();
         $pendingArticles = $this->articleRepository->countPendingArticles();
@@ -79,6 +87,12 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
+        // Vérifier si l'utilisateur a les rôles requis
+        $user = $this->security->getUser();
+        if (!$user || (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_REDACTEUR'))) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits suffisants pour accéder à cette page.');
+        }
+        
         // Récupérer le nombre d'éléments en attente
         $pendingComments = $this->commentRepository->countPendingComments();
         $pendingArticles = $this->articleRepository->countPendingArticles();
