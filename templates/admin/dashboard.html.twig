@@ -153,6 +153,11 @@
             color: white;
         }
 
+        .badge-published {
+            background-color: var(--success);
+            color: white;
+        }
+
         /* Dashboard Container */
         .dashboard-container {
             width: 100%;
@@ -320,11 +325,11 @@
         }
 
         /* Commentaires récents */
-        .comments-section {
+        .comments-section, .articles-section, .pages-section {
             margin-bottom: 2rem;
         }
 
-        .comments-container {
+        .comments-container, .articles-container, .pages-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.25rem;
@@ -333,19 +338,19 @@
 
         /* Garantit que sur mobile on ait une seule colonne */
         @media (max-width: 767px) {
-            .comments-container {
+            .comments-container, .articles-container, .pages-container {
                 grid-template-columns: 1fr;
             }
         }
 
         /* Sur les grands écrans, limiter à 2 colonnes */
         @media (min-width: 768px) {
-            .comments-container {
+            .comments-container, .articles-container, .pages-container {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        .comment-card {
+        .comment-card, .article-card, .page-card {
             background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
@@ -356,24 +361,24 @@
             width: 100%;
         }
 
-        .comment-card:hover {
+        .comment-card:hover, .article-card:hover, .page-card:hover {
             transform: translateY(-3px);
             box-shadow: var(--shadow-hover);
         }
 
-        .comment-card.pending {
+        .comment-card.pending, .article-card.pending, .page-card.pending {
             border-left-color: var(--warning);
         }
 
-        .comment-card.approved {
+        .comment-card.approved, .comment-card.published, .article-card.published, .page-card.published {
             border-left-color: var(--success);
         }
 
-        .comment-card.rejected {
+        .comment-card.rejected, .article-card.rejected, .page-card.rejected {
             border-left-color: var(--danger);
         }
 
-        .comment-header {
+        .comment-header, .article-header, .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -382,18 +387,18 @@
             gap: 0.5rem;
         }
 
-        .comment-author {
+        .comment-author, .article-title, .page-title {
             font-weight: 600;
             color: #333;
         }
 
-        .comment-content {
+        .comment-content, .article-content, .page-content {
             margin-bottom: 0.75rem;
             color: #555;
             line-height: 1.5;
         }
 
-        .comment-date {
+        .comment-date, .article-date, .page-date {
             font-size: 0.8125rem;
             color: #999;
             display: flex;
@@ -401,12 +406,12 @@
             gap: 0.25rem;
         }
 
-        .comment-date i {
+        .comment-date i, .article-date i, .page-date i {
             font-size: 0.75rem;
         }
 
         /* Boutons d'action pour commentaires */
-        .comments-actions {
+        .comments-actions, .articles-actions, .pages-actions {
             margin-top: 1rem;
             display: flex;
             flex-direction: column;
@@ -414,7 +419,7 @@
             width: 100%;
         }
 
-        .comments-actions .btn {
+        .comments-actions .btn, .articles-actions .btn, .pages-actions .btn {
             width: 100%;
             display: flex;
             align-items: center;
@@ -423,7 +428,7 @@
             gap: 0.5rem;
         }
 
-        .no-comments {
+        .no-comments, .no-articles, .no-pages {
             background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
@@ -433,18 +438,18 @@
             width: 100%;
         }
 
-        .no-comments i {
+        .no-comments i, .no-articles i, .no-pages i {
             font-size: 2.5rem;
             color: #ddd;
             margin-bottom: 1rem;
             display: block;
         }
 
-        .no-comments h4 {
+        .no-comments h4, .no-articles h4, .no-pages h4 {
             margin-bottom: 0.75rem;
         }
 
-        .no-comments p {
+        .no-comments p, .no-articles p, .no-pages p {
             margin-bottom: 0;
         }
     </style>
@@ -507,6 +512,162 @@
             <h3 class="action-title">Voir le site</h3>
             <p class="action-desc">Prévisualiser le site public</p>
         </a>
+    </div>
+
+    <!-- Articles récents -->
+    <div class="articles-section">
+        <h2 class="section-title">Articles récents</h2>
+
+        <div class="articles-container">
+            <div>
+                {% if recent_articles is defined and recent_articles|length > 0 %}
+                    {% for article in recent_articles|slice(0, 3) %}
+                        <div class="article-card {{ article.status }}">
+                            <div class="article-header">
+                                <div class="article-title">{{ article.title }}</div>
+                                <span class="badge {% if article.status == 'pending' %}badge-pending{% elseif article.status == 'published' %}badge-published{% else %}badge-rejected{% endif %}">
+                                    {{ article.status == 'pending' ? 'En attente' : (article.status == 'published' ? 'Publié' : 'Rejeté') }}
+                                </span>
+                            </div>
+                            <div class="article-content">
+                                {{ article.content|striptags|slice(0, 150) }}{% if article.content|length > 150 %}...{% endif %}
+                            </div>
+                            <div class="article-date">
+                                <i class="fas fa-clock"></i> {{ article.createdAt|date('d/m/Y') }}
+                                {% if article.author is defined %}
+                                <span class="ms-2">
+                                    <i class="fas fa-user"></i> {{ article.author.nom ?? 'Auteur inconnu' }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-articles">
+                        <i class="fas fa-newspaper"></i>
+                        <h4>Aucun article récent</h4>
+                        <p>Les articles récents apparaîtront ici.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if recent_articles is defined and recent_articles|length > 3 %}
+                    {% for article in recent_articles|slice(3, 3) %}
+                        <div class="article-card {{ article.status }}">
+                            <div class="article-header">
+                                <div class="article-title">{{ article.title }}</div>
+                                <span class="badge {% if article.status == 'pending' %}badge-pending{% elseif article.status == 'published' %}badge-published{% else %}badge-rejected{% endif %}">
+                                    {{ article.status == 'pending' ? 'En attente' : (article.status == 'published' ? 'Publié' : 'Rejeté') }}
+                                </span>
+                            </div>
+                            <div class="article-content">
+                                {{ article.content|striptags|slice(0, 150) }}{% if article.content|length > 150 %}...{% endif %}
+                            </div>
+                            <div class="article-date">
+                                <i class="fas fa-clock"></i> {{ article.createdAt|date('d/m/Y') }}
+                                {% if article.author is defined %}
+                                <span class="ms-2">
+                                    <i class="fas fa-user"></i> {{ article.author.nom ?? 'Auteur inconnu' }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="articles-actions">
+                    {% if pending_articles is defined and pending_articles > 0 %}
+                        <a href="{{ ea_url()
+                            .setController('App\\Controller\\Admin\\ArticleCrudController')
+                            .setAction('index')
+                            .set('filters[status][comparison]', '=')
+                            .set('filters[status][value]', 'pending') }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Modérer les {{ pending_articles }} articles en attente
+                        </a>
+                    {% endif %}
+
+                    <a href="{{ ea_url().setController('App\\Controller\\Admin\\ArticleCrudController').setAction('index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-newspaper"></i> Voir tous les articles
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pages récentes -->
+    <div class="pages-section">
+        <h2 class="section-title">Pages récentes</h2>
+
+        <div class="pages-container">
+            <div>
+                {% if recent_pages is defined and recent_pages|length > 0 %}
+                    {% for page in recent_pages|slice(0, 3) %}
+                        <div class="page-card {{ page.status }}">
+                            <div class="page-header">
+                                <div class="page-title">{{ page.title }}</div>
+                                <span class="badge {% if page.status == 'pending' %}badge-pending{% elseif page.status == 'published' %}badge-published{% else %}badge-rejected{% endif %}">
+                                    {{ page.status == 'pending' ? 'En attente' : (page.status == 'published' ? 'Publié' : 'Rejeté') }}
+                                </span>
+                            </div>
+                            <div class="page-content">
+                                {{ page.content|striptags|slice(0, 150) }}{% if page.content|length > 150 %}...{% endif %}
+                            </div>
+                            <div class="page-date">
+                                <i class="fas fa-clock"></i> {{ page.createdAt|date('d/m/Y') }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-pages">
+                        <i class="fas fa-file-alt"></i>
+                        <h4>Aucune page récente</h4>
+                        <p>Les pages récentes apparaîtront ici.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if recent_pages is defined and recent_pages|length > 3 %}
+                    {% for page in recent_pages|slice(3, 3) %}
+                        <div class="page-card {{ page.status }}">
+                            <div class="page-header">
+                                <div class="page-title">{{ page.title }}</div>
+                                <span class="badge {% if page.status == 'pending' %}badge-pending{% elseif page.status == 'published' %}badge-published{% else %}badge-rejected{% endif %}">
+                                    {{ page.status == 'pending' ? 'En attente' : (page.status == 'published' ? 'Publié' : 'Rejeté') }}
+                                </span>
+                            </div>
+                            <div class="page-content">
+                                {{ page.content|striptags|slice(0, 150) }}{% if page.content|length > 150 %}...{% endif %}
+                            </div>
+                            <div class="page-date">
+                                <i class="fas fa-clock"></i> {{ page.createdAt|date('d/m/Y') }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="pages-actions">
+                    {% if pending_pages is defined and pending_pages > 0 %}
+                        <a href="{{ ea_url()
+                            .setController('App\\Controller\\Admin\\PageCrudController')
+                            .setAction('index')
+                            .set('filters[status][comparison]', '=')
+                            .set('filters[status][value]', 'pending') }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Modérer les {{ pending_pages }} pages en attente
+                        </a>
+                    {% endif %}
+
+                    <a href="{{ ea_url().setController('App\\Controller\\Admin\\PageCrudController').setAction('index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-file-alt"></i> Voir toutes les pages
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Commentaires récents -->

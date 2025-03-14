@@ -42,6 +42,8 @@ class DashboardController extends AbstractDashboardController
     {
         // Récupérer les statistiques
         $pendingComments = $this->commentRepository->countPendingComments();
+        $pendingArticles = $this->articleRepository->countPendingArticles();
+        $pendingPages = $this->pageRepository->countPendingPages();
         $articleCount = $this->articleRepository->count([]);
         $userCount = $this->userRepository->count([]);
         $galleryCount = $this->galleryRepository->count([]);
@@ -56,6 +58,8 @@ class DashboardController extends AbstractDashboardController
         
         return $this->render('admin/dashboard.html.twig', [
             'pending_comments' => $pendingComments,
+            'pending_articles' => $pendingArticles,
+            'pending_pages' => $pendingPages,
             'article_count' => $articleCount,
             'user_count' => $userCount,
             'gallery_count' => $galleryCount,
@@ -75,14 +79,22 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        // Récupérer le nombre de commentaires en attente
+        // Récupérer le nombre d'éléments en attente
         $pendingComments = $this->commentRepository->countPendingComments();
+        $pendingArticles = $this->articleRepository->countPendingArticles();
+        $pendingPages = $this->pageRepository->countPendingPages();
         
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
         
         yield MenuItem::section('Contenu');
-        yield MenuItem::linkToCrud('Articles', 'fa fa-newspaper', Article::class);
-        yield MenuItem::linkToCrud('Pages', 'fa fa-file', Page::class);
+        
+        // Articles avec badge
+        yield MenuItem::linkToCrud('Articles', 'fa fa-newspaper', Article::class)
+            ->setBadge($pendingArticles, $pendingArticles > 0 ? 'warning' : 'secondary');
+            
+        // Pages avec badge
+        yield MenuItem::linkToCrud('Pages', 'fa fa-file', Page::class)
+            ->setBadge($pendingPages, $pendingPages > 0 ? 'warning' : 'secondary');
         
         yield MenuItem::section('Médias');
         yield MenuItem::linkToCrud('Galleries', 'fa fa-images', Gallery::class);
@@ -95,32 +107,39 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Utilisateurs');
         yield MenuItem::linkToCrud('Utilisateurs', 'fa fa-users', User::class);
         
-        // Lien direct vers les commentaires en attente de modération
+        // Liens directs vers les éléments en attente de modération
+        yield MenuItem::section('Modération');
+        
+        // Lien pour les articles en attente
+        if ($pendingArticles > 0) {
+            yield MenuItem::linkToUrl('Articles à modérer', 'fa fa-edit', $this->adminUrlGenerator
+                ->setController(ArticleCrudController::class)
+                ->setAction('index')
+                ->set('filters[status][comparison]', '=')
+                ->set('filters[status][value]', 'pending')
+                ->generateUrl());
+        }
+        
+        // Lien pour les pages en attente
+        if ($pendingPages > 0) {
+            yield MenuItem::linkToUrl('Pages à modérer', 'fa fa-file-alt', $this->adminUrlGenerator
+                ->setController(PageCrudController::class)
+                ->setAction('index')
+                ->set('filters[status][comparison]', '=')
+                ->set('filters[status][value]', 'pending')
+                ->generateUrl());
+        }
+        
+        // Lien pour les commentaires en attente
         if ($pendingComments > 0) {
-            yield MenuItem::linkToUrl('Commentaires à modérer', 'fa fa-exclamation-circle', $this->adminUrlGenerator
+            yield MenuItem::linkToUrl('Commentaires à modérer', 'fa fa-comments', $this->adminUrlGenerator
                 ->setController(CommentCrudController::class)
                 ->setAction('index')
                 ->set('filters[status][comparison]', '=')
                 ->set('filters[status][value]', 'pending')
                 ->generateUrl());
         }
-
-        // Récupérer le nombre d'articles en attente de modération
-        $pendingArticles = $this->articleRepository->countPendingArticles();
-
-// Lien direct vers les articles en attente de modération
-    if ($pendingArticles > 0) {
-    yield MenuItem::linkToUrl('Articles à modérer', 'fa fa-exclamation-circle', $this->adminUrlGenerator
-        ->setController(ArticleCrudController::class)
-        ->setAction('index')
-        ->set('filters[status][comparison]', '=')
-        ->set('filters[status][value]', 'pending') // Assure-toi que le statut des articles en attente est bien "brouillon"
-        ->generateUrl());
-}
-
-
-        
-        
+                
         yield MenuItem::section('');
         yield MenuItem::linkToUrl('Voir le site', 'fa fa-external-link-alt', $this->generateUrl('app_home'))
             ->setLinkTarget('_blank');

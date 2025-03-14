@@ -9,6 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: PageRepository::class)]
 class Page
 {
+    public const STATUS_PENDING = 'pending';     // En attente de validation
+    public const STATUS_PUBLISHED = 'published'; // Publié
+    public const STATUS_REJECTED = 'rejected';   // Rejeté
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -42,6 +46,16 @@ class Page
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $metaKeyword;
+    
+    #[ORM\Column(length: 20)]
+    private string $status = self::STATUS_PENDING;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updateAt = new \DateTimeImmutable();
+        $this->status = self::STATUS_PENDING; // Par défaut, les pages sont en attente
+    }
 
     public function getId(): ?int
     {
@@ -150,5 +164,31 @@ class Page
         $this->updateAt = $updateAt;
 
         return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === self::STATUS_PUBLISHED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
     }
 }

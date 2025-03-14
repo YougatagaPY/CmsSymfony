@@ -16,28 +16,29 @@ class PageRepository extends ServiceEntityRepository
         parent::__construct($registry, Page::class);
     }
 
-    //    /**
-    //     * @return Page[] Returns an array of Page objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return Page[] Returns only published pages
+     */
+    public function findPublished(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.status = :status')
+            ->setParameter('status', Page::STATUS_PUBLISHED)
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Page
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Compte le nombre de pages en attente de validation
+     */
+    public function countPendingPages(): int
+    {
+        return $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->andWhere('p.status = :status')
+            ->setParameter('status', Page::STATUS_PENDING)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
