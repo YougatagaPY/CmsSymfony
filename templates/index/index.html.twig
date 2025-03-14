@@ -39,22 +39,7 @@
                     </article>
                 </div>
                 {% else %}
-                <div class="featured-post mb-5">
-                    <article class="post-card">
-                        <div class="post-thumbnail">
-                            <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article principal" class="post-image">
-                        </div>
-                        <div class="post-content">
-                            <div class="post-meta">
-                                <span class="post-date">15 Mars 2024</span>
-                                <span class="post-author">Par Jean Dupont</span>
-                            </div>
-                            <h2 class="post-title">Les meilleures pratiques en Symfony</h2>
-                            <p class="post-excerpt">Découvrez les bonnes pratiques pour développer des applications robustes avec Symfony et PHP 8.3...</p>
-                            <a href="#" class="post-read-more">Lire l'article →</a>
-                        </div>
-                    </article>
-                </div>
+             
                 {% endif %}
 
                 <!-- Titre de section pour les articles récents -->
@@ -88,18 +73,36 @@
                     {% endif %}
                 </div>
 
-                <!-- Pagination -->
-                {% if articles|length > 0 %}
-                <nav class="pagination-wrapper">
-                    <ul class="pagination">
-                        <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a></li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a></li>
-                    </ul>
-                </nav>
-                {% endif %}
+                
+                
+                <!-- Pages récentes -->
+                <h2 class="section-title mb-4 mt-5">Pages récentes</h2>
+                
+                <div class="row post-grid">
+                    {% if recent_pages|length > 0 %}
+                        {% for page in recent_pages %}
+                            {% if page.status is defined and page.status == 'published' %}
+                                <div class="col-md-4 mb-4">
+                                    <article class="post-card h-100">
+                                        <div class="post-content">
+                                            <div class="post-meta">
+                                                <span class="post-date">{{ page.createdAt|date('d M Y') }}</span>
+                                            </div>
+                                            <h3 class="post-title">{{ page.title }}</h3>
+                                            <p class="post-excerpt">{{ page.content|striptags|slice(0, 100) ~ '...' }}</p>
+<a href="{{ path('app_page_show', {'slug': page.slug}) }}">Lire plus</a>                                        </div>
+                                    </article>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucune page publiée récemment.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Sidebar -->
@@ -115,45 +118,6 @@
                         <li><a href="{{ path('article_category', {'category': 'CSS'}) }}"><i class="fab fa-css3"></i> CSS</a></li>
                     </ul>
                 </div> #}
-
-                <!-- Articles populaires -->
-                <div class="sidebar-widget">
-                    <h3 class="widget-title"><i class="fas fa-fire"></i> Articles populaires</h3>
-                    <div class="popular-posts">
-                        {% if popular_articles is defined and popular_articles|length > 0 %}
-                            {% for article in popular_articles %}
-                                {% if article.status is defined and article.status == 'published' %}
-                                    <div class="mini-post">
-                                        {% if article.image %}
-                                            <img src="{{ article.image }}" alt="{{ article.title }}" class="mini-post-image">
-                                        {% else %}
-                                            <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="{{ article.title }}" class="mini-post-image">
-                                        {% endif %}
-                                        <div class="mini-post-content">
-                                            <h4 class="mini-post-title">{{ article.title }}</h4>
-                                            <span class="mini-post-date">{{ article.createdAt|date('d M Y') }}</span>
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <div class="mini-post">
-                                <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article populaire" class="mini-post-image">
-                                <div class="mini-post-content">
-                                    <h4 class="mini-post-title">Optimisation des performances</h4>
-                                    <span class="mini-post-date">10 Mars 2024</span>
-                                </div>
-                            </div>
-                            <div class="mini-post">
-                                <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article populaire" class="mini-post-image">
-                                <div class="mini-post-content">
-                                    <h4 class="mini-post-title">Design patterns en PHP</h4>
-                                    <span class="mini-post-date">2 Mars 2024</span>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
 
                 <!-- À propos -->
                 <div class="sidebar-widget">

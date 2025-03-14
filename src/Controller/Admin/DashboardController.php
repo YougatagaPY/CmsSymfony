@@ -64,6 +64,9 @@ class DashboardController extends AbstractDashboardController
         // Récupérer les articles récents
         $recentArticles = $this->articleRepository->findBy([], ['createdAt' => 'DESC'], 5);
         
+        // Récupérer les pages récentes
+        $recentPages = $this->pageRepository->findBy([], ['createdAt' => 'DESC'], 5);
+        
         return $this->render('admin/dashboard.html.twig', [
             'pending_comments' => $pendingComments,
             'pending_articles' => $pendingArticles,
@@ -75,6 +78,7 @@ class DashboardController extends AbstractDashboardController
             'page_count' => $pageCount,
             'recent_comments' => $recentComments,
             'recent_articles' => $recentArticles,
+            'recent_pages' => $recentPages,
         ]);
     }
 
