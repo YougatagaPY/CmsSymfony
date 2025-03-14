@@ -41,69 +41,74 @@
         </div>
 
        
-
-        {# Section des commentaires #}
-        <section class="comments-section">
-            <h2 class="comments-title">
-                Commentaires <span class="comments-count">({{ article.comments|length }})</span>
-            </h2>
-            
-            {# Afficher les messages flash #}
-            {% for label, messages in app.flashes %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ label }}">
-                        {{ message }}
+      {# Section des commentaires #}
+<section class="comments-section">
+    <h2 class="comments-title">
+        Commentaires <span class="comments-count">({{ approvedComments|length }})</span>
+    </h2>
+    
+    {# Afficher les messages flash #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+    
+    {# Liste des commentaires approuvés #}
+    {% if approvedComments|length > 0 %}
+        <div class="comments-list">
+            {% for comment in approvedComments|sort((b, a) => a.createdAt <=> b.createdAt) %}
+                <div class="comment">
+                    <div class="comment-header">
+                        <div class="comment-author">{{ comment.author }}</div>
+                        <div class="comment-date">
+                            <i class="far fa-clock"></i> 
+                            {{ comment.createdAt|date('d/m/Y à H:i') }}
+                        </div>
                     </div>
-                {% endfor %}
+                    <div class="comment-content">
+                        {{ comment.content|nl2br }}
+                    </div>
+                </div>
             {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-comments">
+            Soyez le premier à commenter cet article !
+        </div>
+    {% endif %}
+    
+    {# Formulaire de commentaire #}
+    {% if app.user %}
+        <div class="comment-form-container">
+            <h3 class="comment-form-title">Laisser un commentaire</h3>
             
-            {# Liste des commentaires #}
-            {% if article.comments|length > 0 %}
-                <div class="comments-list">
-                    {% for comment in article.comments|sort((b, a) => a.createdAt <=> b.createdAt) %}
-                        <div class="comment">
-                            <div class="comment-header">
-                                <div class="comment-author">{{ comment.author }}</div>
-                                <div class="comment-date">
-                                    <i class="far fa-clock"></i> 
-                                    {{ comment.createdAt|date('d/m/Y à H:i') }}
-                                </div>
-                            </div>
-                            <div class="comment-content">
-                                {{ comment.content|nl2br }}
-                            </div>
-                        </div>
-                    {% endfor %}
+            {{ form_start(commentForm, {'attr': {'class': 'comment-form'}}) }}
+                <div class="form-group">
+                    {{ form_label(commentForm.content) }}
+                    {{ form_widget(commentForm.content, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(commentForm.content) }}
                 </div>
-            {% else %}
-                <div class="no-comments">
-                    Soyez le premier à commenter cet article !
-                </div>
-            {% endif %}
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Publier le commentaire
+                </button>
+            {{ form_end(commentForm) }}
             
-            {# Formulaire de commentaire #}
-            {% if app.user %}
-                <div class="comment-form-container">
-                    <h3 class="comment-form-title">Laisser un commentaire</h3>
-                    
-                    {{ form_start(commentForm, {'attr': {'class': 'comment-form'}}) }}
-                        <div class="form-group">
-                            {{ form_label(commentForm.content) }}
-                            {{ form_widget(commentForm.content, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(commentForm.content) }}
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> Publier le commentaire
-                        </button>
-                    {{ form_end(commentForm) }}
-                </div>
-            {% else %}
-                <div class="comment-form-container">
-                    <p>Vous devez être <a href="{{ path('app_login') }}">connecté</a> pour laisser un commentaire.</p>
-                </div>
-            {% endif %}
-        </section>
+            <div class="comment-moderation-notice mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> Les commentaires sont soumis à modération avant publication.
+                </small>
+            </div>
+        </div>
+    {% else %}
+        <div class="comment-form-container">
+            <p>Vous devez être <a href="{{ path('app_login') }}">connecté</a> pour laisser un commentaire.</p>
+        </div>
+    {% endif %}
+</section>
 
         {# Navigation entre articles #}
         <div class="article-navigation">

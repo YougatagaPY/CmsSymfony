@@ -6,6 +6,7 @@ use App\Entity\Comment;
 use App\Entity\User;
 use App\Form\CommentType;
 use App\Repository\ArticleRepository;
+use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,7 @@ class ArticleController extends AbstractController
     public function show(
         string $slug,
         ArticleRepository $articleRepository, 
+        CommentRepository $commentRepository,
         Request $request, 
         EntityManagerInterface $entityManager
     ): Response {
@@ -46,6 +48,7 @@ class ArticleController extends AbstractController
             
             $comment->setArticle($article);
             $comment->setCreatedAt(new \DateTimeImmutable());
+            $comment->setStatus(Comment::STATUS_PENDING);
             
             // Associer l'utilisateur et son nom au commentaire
             /** @var User $user */
@@ -56,7 +59,7 @@ class ArticleController extends AbstractController
             $entityManager->persist($comment);
             $entityManager->flush();
             
-            $this->addFlash('success', 'Votre commentaire a été publié.');
+            $this->addFlash('success', 'Votre commentaire a été soumis et sera visible après validation.');
             return $this->redirectToRoute('article_show', ['slug' => $article->getSlug()]);
         }
         
@@ -64,11 +67,15 @@ class ArticleController extends AbstractController
         $prev_article = $articleRepository->findPreviousArticle($article);
         $next_article = $articleRepository->findNextArticle($article);
         
+        // Récupérer uniquement les commentaires approuvés
+        $approvedComments = $commentRepository->findApprovedByArticle($article);
+        
         return $this->render('article/show.html.twig', [
             'article' => $article,
             'prev_article' => $prev_article ?? null,
             'next_article' => $next_article ?? null,
             'commentForm' => $form->createView(),
+            'approvedComments' => $approvedComments,
         ]);
     }
 }

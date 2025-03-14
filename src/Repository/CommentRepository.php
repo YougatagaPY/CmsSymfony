@@ -2,13 +2,11 @@
 
 namespace App\Repository;
 
+use App\Entity\Article;
 use App\Entity\Comment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Comment>
- */
 class CommentRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +14,31 @@ class CommentRepository extends ServiceEntityRepository
         parent::__construct($registry, Comment::class);
     }
 
-    //    /**
-    //     * @return Comment[] Returns an array of Comment objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Récupère les commentaires approuvés pour un article donné
+     */
+    public function findApprovedByArticle(Article $article)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.article = :article')
+            ->andWhere('c.status = :status')
+            ->setParameter('article', $article)
+            ->setParameter('status', Comment::STATUS_APPROVED)
+            ->orderBy('c.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Comment
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Compte le nombre de commentaires en attente
+     */
+    public function countPendingComments(): int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->andWhere('c.status = :status')
+            ->setParameter('status', Comment::STATUS_PENDING)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

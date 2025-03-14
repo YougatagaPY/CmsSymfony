@@ -9,6 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
 {
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -24,9 +28,11 @@ class Comment
     #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
     
+    #[ORM\Column(name: "created_at")]
+    private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $CreatedAt = null;
+    #[ORM\Column(length: 20)]
+    private string $status = self::STATUS_PENDING;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     private ?Article $article = null;
@@ -73,14 +79,36 @@ class Comment
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->CreatedAt;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $CreatedAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->CreatedAt = $CreatedAt;
+        $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === self::STATUS_APPROVED;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
     }
 
     public function getArticle(): ?Article
