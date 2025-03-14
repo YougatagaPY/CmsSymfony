@@ -12,6 +12,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[ORM\HasLifecycleCallbacks]
 class Article
 {
+    public const STATUS_PENDING = 'pending';     // En attente de validation
+    public const STATUS_PUBLISHED = 'published'; // Publié
+    public const STATUS_REJECTED = 'rejected';   // Rejeté
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -35,16 +39,13 @@ class Article
 
     private ?Gallery $gallerySelector = null;
 
-
-    
-
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'article')]
+    #[ORM\OneToMany(mappedBy: 'article', targetEntity: Comment::class)]
     private Collection $comments;
 
     #[ORM\ManyToOne(inversedBy: 'articles')]
@@ -56,41 +57,14 @@ class Article
 
     private ?UploadedFile $imageFile = null;
 
-
-        /**
-     * @return Collection<int, Comment>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
-    public function addComment(Comment $comment): self
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->setArticle($this);
-        }
-        
-        return $this;
-    }
-
-    public function removeComment(Comment $comment): self
-    {
-        if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
-            if ($comment->getArticle() === $this) {
-                $comment->setArticle(null);
-            }
-        }
-        
-        return $this;
-    }
+    #[ORM\Column(length: 20)]
+    private string $status = self::STATUS_PENDING;
 
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
+        $this->status = self::STATUS_PENDING; // Par défaut, les articles sont en attente
     }
 
     #[ORM\PreUpdate]
@@ -126,19 +100,6 @@ class Article
         return $this;
     }
 
-    
-
-    public function getSelectedImage(): ?Image
-    {
-        return $this->selectedImage;
-    }
-
-    public function setSelectedImage(?Image $selectedImage): self
-    {
-        $this->selectedImage = $selectedImage;
-        return $this;
-    }
-
     public function getCategory(): ?string
     {
         return $this->category;
@@ -161,6 +122,28 @@ class Article
         return $this;
     }
 
+    public function getSelectedImage(): ?Image
+    {
+        return $this->selectedImage;
+    }
+
+    public function setSelectedImage(?Image $selectedImage): self
+    {
+        $this->selectedImage = $selectedImage;
+        return $this;
+    }
+
+    public function getGallerySelector(): ?Gallery
+    {
+        return $this->gallerySelector;
+    }
+
+    public function setGallerySelector(?Gallery $gallerySelector): self
+    {
+        $this->gallerySelector = $gallerySelector;
+        return $this;
+    }
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -169,6 +152,36 @@ class Article
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setArticle($this);
+        }
+        
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getArticle() === $this) {
+                $comment->setArticle(null);
+            }
+        }
+        
+        return $this;
     }
 
     public function getAuthor(): ?User
@@ -202,5 +215,31 @@ class Article
     {
         $this->imageFile = $imageFile;
         return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === self::STATUS_PUBLISHED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
     }
 }

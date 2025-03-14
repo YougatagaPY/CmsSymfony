@@ -23,6 +23,8 @@ Encore
     .addEntry('app', './assets/app.js')
     .addStyleEntry('article', './assets/styles/article.css') // Ajout d'une entrée pour article.css
     .addStyleEntry('page', './assets/styles/article.css') // Ajout d'une entrée pour article.css
+    .addStyleEntry('dashboard', './assets/styles/admin.css') // Ajout d'une entrée pour article.css
+
 
 
 

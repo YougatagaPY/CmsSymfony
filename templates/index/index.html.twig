@@ -17,6 +17,28 @@
             <!-- Colonne de contenu principal -->
             <div class="col-lg-8">
                 <!-- Article vedette -->
+                {% if featured_article is defined and featured_article and featured_article.isPublished %}
+                <div class="featured-post mb-5">
+                    <article class="post-card">
+                        <div class="post-thumbnail">
+                            {% if featured_article.image %}
+                                <img src="{{ featured_article.image }}" alt="{{ featured_article.title }}" class="post-image">
+                            {% else %}
+                                <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article principal" class="post-image">
+                            {% endif %}
+                        </div>
+                        <div class="post-content">
+                            <div class="post-meta">
+                                <span class="post-date">{{ featured_article.createdAt|date('d M Y') }}</span>
+                                <span class="post-author">Par {{ featured_article.author.nom }}</span>
+                            </div>
+                            <h2 class="post-title">{{ featured_article.title }}</h2>
+                            <p class="post-excerpt">{{ featured_article.content|striptags|slice(0, 150) }}...</p>
+                            <a href="{{ path('article_show', {'slug': featured_article.slug}) }}" class="post-read-more">Lire l'article →</a>
+                        </div>
+                    </article>
+                </div>
+                {% else %}
                 <div class="featured-post mb-5">
                     <article class="post-card">
                         <div class="post-thumbnail">
@@ -33,27 +55,41 @@
                         </div>
                     </article>
                 </div>
+                {% endif %}
 
                 <!-- Titre de section pour les articles récents -->
                 <h2 class="section-title mb-4">Articles récents</h2>
                 
                 <!-- Grille d'articles -->
-               <div class="row post-grid">
-    {% for article in articles %}
-        <div class="col-md-3 mb-4">
-            <article class="post-card h-100">
-<img src="{{ article.image }}" alt="{{ article.title }}" class="post-image">
-                <div class="post-content">
-                    <h3 class="post-title">{{ article.title }}</h3>
-                    <p class="post-excerpt">{{ (article.content|slice(0, 150) ~ '...')|raw }}</p>
-                <a href="{{ path('article_show', {'slug': article.slug}) }}">Lire plus</a>
+                <div class="row post-grid">
+                    {% if articles|length > 0 %}
+                        {% for article in articles %}
+                            {% if article.status is defined and article.status == 'published' %}
+                                <div class="col-md-3 mb-4">
+                                    <article class="post-card h-100">
+                                        {% if article.image %}
+                                            <img src="{{ article.image }}" alt="{{ article.title }}" class="post-image">
+                                        {% endif %}
+                                        <div class="post-content">
+                                            <h3 class="post-title">{{ article.title }}</h3>
+                                            <p class="post-excerpt">{{ article.content|striptags|slice(0, 150) ~ '...' }}</p>
+                                            <a href="{{ path('article_show', {'slug': article.slug}) }}">Lire plus</a>
+                                        </div>
+                                    </article>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun article publié pour le moment.
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
-            </article>
-        </div>
-    {% endfor %}
-</div>
 
                 <!-- Pagination -->
+                {% if articles|length > 0 %}
                 <nav class="pagination-wrapper">
                     <ul class="pagination">
                         <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a></li>
@@ -63,50 +99,59 @@
                         <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a></li>
                     </ul>
                 </nav>
+                {% endif %}
             </div>
 
             <!-- Sidebar -->
             <aside class="col-lg-4">
-                <!-- Recherche -->
-                <div class="sidebar-widget">
-                    <h3 class="widget-title"><i class="fas fa-search"></i> Recherche</h3>
-                    <form class="search-form">
-                        <div class="input-group">
-                            <input type="search" class="form-control" placeholder="Rechercher...">
-                            <button class="btn btn-search" type="submit"><i class="fas fa-arrow-right"></i></button>
-                        </div>
-                    </form>
-                </div>
-
+               
                 <!-- Catégories -->
-                <div class="sidebar-widget">
+                {# <div class="sidebar-widget">
                     <h3 class="widget-title"><i class="fas fa-folder-open"></i> Catégories</h3>
                     <ul class="category-list">
-                        <li><a href="#"><i class="fas fa-code"></i> Symfony</a></li>
-                        <li><a href="#"><i class="fab fa-php"></i> PHP</a></li>
-                        <li><a href="#"><i class="fab fa-js"></i> JavaScript</a></li>
-                        <li><a href="#"><i class="fab fa-css3"></i> CSS</a></li>
+                        <li><a href="{{ path('article_category', {'category': 'Symfony'}) }}"><i class="fas fa-code"></i> Symfony</a></li>
+                        <li><a href="{{ path('article_category', {'category': 'PHP'}) }}"><i class="fab fa-php"></i> PHP</a></li>
+                        <li><a href="{{ path('article_category', {'category': 'JavaScript'}) }}"><i class="fab fa-js"></i> JavaScript</a></li>
+                        <li><a href="{{ path('article_category', {'category': 'CSS'}) }}"><i class="fab fa-css3"></i> CSS</a></li>
                     </ul>
-                </div>
+                </div> #}
 
                 <!-- Articles populaires -->
                 <div class="sidebar-widget">
                     <h3 class="widget-title"><i class="fas fa-fire"></i> Articles populaires</h3>
                     <div class="popular-posts">
-                        <div class="mini-post">
-                            <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article populaire" class="mini-post-image">
-                            <div class="mini-post-content">
-                                <h4 class="mini-post-title">Optimisation des performances</h4>
-                                <span class="mini-post-date">10 Mars 2024</span>
+                        {% if popular_articles is defined and popular_articles|length > 0 %}
+                            {% for article in popular_articles %}
+                                {% if article.status is defined and article.status == 'published' %}
+                                    <div class="mini-post">
+                                        {% if article.image %}
+                                            <img src="{{ article.image }}" alt="{{ article.title }}" class="mini-post-image">
+                                        {% else %}
+                                            <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="{{ article.title }}" class="mini-post-image">
+                                        {% endif %}
+                                        <div class="mini-post-content">
+                                            <h4 class="mini-post-title">{{ article.title }}</h4>
+                                            <span class="mini-post-date">{{ article.createdAt|date('d M Y') }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="mini-post">
+                                <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article populaire" class="mini-post-image">
+                                <div class="mini-post-content">
+                                    <h4 class="mini-post-title">Optimisation des performances</h4>
+                                    <span class="mini-post-date">10 Mars 2024</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="mini-post">
-                            <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article populaire" class="mini-post-image">
-                            <div class="mini-post-content">
-                                <h4 class="mini-post-title">Design patterns en PHP</h4>
-                                <span class="mini-post-date">2 Mars 2024</span>
+                            <div class="mini-post">
+                                <img src="{{ asset('images/enzolaheurte.jpg') }}" alt="Article populaire" class="mini-post-image">
+                                <div class="mini-post-content">
+                                    <h4 class="mini-post-title">Design patterns en PHP</h4>
+                                    <span class="mini-post-date">2 Mars 2024</span>
+                                </div>
                             </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
 

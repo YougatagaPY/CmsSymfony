@@ -2,6 +2,7 @@
 // src/Controller/ArticleController.php
 namespace App\Controller;
 
+use App\Entity\Article;
 use App\Entity\Comment;
 use App\Entity\User;
 use App\Form\CommentType;
@@ -29,6 +30,25 @@ class ArticleController extends AbstractController
         
         if (!$article) {
             throw new NotFoundHttpException('Article non trouvé');
+        }
+        
+        // Vérifier si l'article est publié ou si l'utilisateur est l'auteur ou un admin
+        if (!$article->isPublished()) {
+            // Si l'utilisateur n'est pas connecté ou n'est ni l'auteur ni un admin, on renvoie une 404
+            if (!$this->getUser() || 
+                ($this->getUser() !== $article->getAuthor() && !$this->isGranted('ROLE_ADMIN'))) {
+                throw new NotFoundHttpException('Article non trouvé');
+            }
+            
+            // Ajouter un message flash si l'article n'est pas publié
+            $statusMessages = [
+                Article::STATUS_PENDING => 'Cet article est en attente de validation.',
+                Article::STATUS_REJECTED => 'Cet article a été rejeté.'
+            ];
+            
+            if (isset($statusMessages[$article->getStatus()])) {
+                $this->addFlash('warning', $statusMessages[$article->getStatus()]);
+            }
         }
         
         // Créer un nouveau commentaire
@@ -63,17 +83,18 @@ class ArticleController extends AbstractController
             return $this->redirectToRoute('article_show', ['slug' => $article->getSlug()]);
         }
         
-        // Récupérer l'article précédent et suivant (optionnel)
-        $prev_article = $articleRepository->findPreviousArticle($article);
-        $next_article = $articleRepository->findNextArticle($article);
+        // Récupérer l'article précédent et suivant (uniquement parmi les articles publiés)
+        // Si l'article courant n'est pas publié, prev_article et next_article seront null
+        $prev_article = $article->isPublished() ? $articleRepository->findPreviousArticle($article) : null;
+        $next_article = $article->isPublished() ? $articleRepository->findNextArticle($article) : null;
         
         // Récupérer uniquement les commentaires approuvés
         $approvedComments = $commentRepository->findApprovedByArticle($article);
         
         return $this->render('article/show.html.twig', [
             'article' => $article,
-            'prev_article' => $prev_article ?? null,
-            'next_article' => $next_article ?? null,
+            'prev_article' => $prev_article,
+            'next_article' => $next_article,
             'commentForm' => $form->createView(),
             'approvedComments' => $approvedComments,
         ]);

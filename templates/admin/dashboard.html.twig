@@ -1,76 +1,585 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
 
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Variables fondamentales */
+        :root {
+            --primary: #4e73df;
+            --primary-hover: #2e59d9;
+            --primary-light: rgba(78, 115, 223, 0.1);
+            --success: #1cc88a;
+            --success-light: rgba(28, 200, 138, 0.1);
+            --info: #36b9cc;
+            --info-light: rgba(54, 185, 204, 0.1);
+            --warning: #f6c23e;
+            --warning-light: rgba(246, 194, 62, 0.1);
+            --danger: #e74a3b;
+            --danger-light: rgba(231, 74, 59, 0.1);
+            --dark: #5a5c69;
+            --dark-light: rgba(90, 92, 105, 0.1);
+            --light: #f8f9fc;
+            --gray: #858796;
+            --gray-light: #f8f9fc;
+            --border-radius: 0.6rem;
+            --shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            --shadow-hover: 0 0.35rem 2rem 0 rgba(58, 59, 69, 0.2);
+            --transition: all 0.25s ease;
+        }
+
+        /* Reset et styles globaux */
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fc;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .content-wrapper {
+            background-color: #f8f9fc;
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        .content {
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Typographie */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.2;
+            margin-top: 0;
+            color: #333;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: none;
+        }
+
+        /* Boutons */
+        .btn {
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.375rem;
+            transition: var(--transition);
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            border-color: var(--warning);
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+        }
+
+        .btn-outline-primary {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.35em 0.65em;
+            font-weight: 500;
+            border-radius: 50rem;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-pending {
+            background-color: var(--warning);
+            color: #212529;
+        }
+        
+        .badge-approved {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .badge-rejected {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* En-tête du dashboard */
+        .dashboard-header {
+            padding: 1rem 0 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #333;
+        }
+
+        .dashboard-header p {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 0;
+            max-width: 800px;
+        }
+
+        /* Grille des actions rapides */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+            width: 100%;
+        }
+
+        /* Garantit que sur mobile on ait une seule colonne */
+        @media (max-width: 576px) {
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sur les écrans moyens, forcer 2 colonnes */
+        @media (min-width: 577px) and (max-width: 991px) {
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Sur les grands écrans, forcer 3 colonnes */
+        @media (min-width: 992px) {
+            .quick-actions {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Cartes d'action */
+        .action-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            text-decoration: none !important;
+            color: #333 !important;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 1.75rem 1.5rem;
+            border-top: 5px solid transparent;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .action-card.primary { border-top-color: var(--primary); }
+        .action-card.success { border-top-color: var(--success); }
+        .action-card.info { border-top-color: var(--info); }
+        .action-card.warning { border-top-color: var(--warning); }
+        .action-card.danger { border-top-color: var(--danger); }
+        .action-card.dark { border-top-color: var(--dark); }
+
+        .action-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .action-card:hover .action-icon {
+            transform: scale(1.1);
+        }
+
+        .action-primary .action-icon {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .action-success .action-icon {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .action-info .action-icon {
+            background-color: var(--info-light);
+            color: var(--info);
+        }
+
+        .action-warning .action-icon {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .action-danger .action-icon {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .action-dark .action-icon {
+            background-color: var(--dark-light);
+            color: var(--dark);
+        }
+
+        .action-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .action-desc {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        /* Section de titres */
+        .section-title {
+            position: relative;
+            font-size: 1.375rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            color: #333;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+
+        /* Commentaires récents */
+        .comments-section {
+            margin-bottom: 2rem;
+        }
+
+        .comments-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+        }
+
+        /* Garantit que sur mobile on ait une seule colonne */
+        @media (max-width: 767px) {
+            .comments-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sur les grands écrans, limiter à 2 colonnes */
+        @media (min-width: 768px) {
+            .comments-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .comment-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            width: 100%;
+        }
+
+        .comment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .comment-card.pending {
+            border-left-color: var(--warning);
+        }
+
+        .comment-card.approved {
+            border-left-color: var(--success);
+        }
+
+        .comment-card.rejected {
+            border-left-color: var(--danger);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .comment-content {
+            margin-bottom: 0.75rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .comment-date {
+            font-size: 0.8125rem;
+            color: #999;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .comment-date i {
+            font-size: 0.75rem;
+        }
+
+        /* Boutons d'action pour commentaires */
+        .comments-actions {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .comments-actions .btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            gap: 0.5rem;
+        }
+
+        .no-comments {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: #666;
+            width: 100%;
+        }
+
+        .no-comments i {
+            font-size: 2.5rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .no-comments h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .no-comments p {
+            margin-bottom: 0;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-    <div class="dashboard-welcome">
-        <h1>Bienvenue dans l'administration du CMS</h1>
-        <p>Utilisez le menu à gauche pour gérer votre site.</p>
+<div class="dashboard-container">
+    <!-- En-tête du dashboard -->
+    <div class="dashboard-header">
+        <h1>Tableau de bord</h1>
+        <p>Bienvenue dans l'interface d'administration de votre site. Gérez votre contenu, consultez les statistiques et visualisez les interactions récentes de vos utilisateurs.</p>
     </div>
 
-    <div class="dashboard-stats mt-4">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card {% if pending_comments > 0 %}bg-warning-subtle{% else %}bg-light{% endif %} mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Commentaires en attente</h5>
-                        <p class="card-text fs-1">{{ pending_comments }}</p>
-                        {% if pending_comments > 0 %}
-                            <a href="{{ ea_url()
-                                .setController('App\\Controller\\Admin\\CommentCrudController')
-                                .setAction('index')
-                                .set('filters[status][comparison]', '=')
-                                .set('filters[status][value]', 'pending') }}" 
-                               class="btn btn-warning">
-                                <i class="fa fa-check-circle"></i> Modérer les commentaires
-                            </a>
-                        {% else %}
-                            <span class="text-success"><i class="fa fa-check-circle"></i> Tout est à jour !</span>
-                        {% endif %}
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\ArticleCrudController').setAction('new') }}" class="action-card action-primary primary">
+            <div class="action-icon">
+                <i class="fas fa-newspaper"></i>
+            </div>
+            <h3 class="action-title">Nouvel article</h3>
+            <p class="action-desc">Créer et publier un nouvel article</p>
+        </a>
+
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\PageCrudController').setAction('new') }}" class="action-card action-success success">
+            <div class="action-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <h3 class="action-title">Nouvelle page</h3>
+            <p class="action-desc">Ajouter une page statique</p>
+        </a>
+
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\GalleryCrudController').setAction('new') }}" class="action-card action-info info">
+            <div class="action-icon">
+                <i class="fas fa-images"></i>
+            </div>
+            <h3 class="action-title">Nouvelle galerie</h3>
+            <p class="action-desc">Créer une nouvelle galerie d'images</p>
+        </a>
+
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\ImageCrudController').setAction('new') }}" class="action-card action-warning warning">
+            <div class="action-icon">
+                <i class="fas fa-image"></i>
+            </div>
+            <h3 class="action-title">Nouvelle image</h3>
+            <p class="action-desc">Ajouter une image à la médiathèque</p>
+        </a>
+
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\UserCrudController').setAction('new') }}" class="action-card action-danger danger">
+            <div class="action-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h3 class="action-title">Nouvel utilisateur</h3>
+            <p class="action-desc">Ajouter un utilisateur au système</p>
+        </a>
+
+        <a href="{{ path('app_home') }}" target="_blank" class="action-card action-dark dark">
+            <div class="action-icon">
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+            <h3 class="action-title">Voir le site</h3>
+            <p class="action-desc">Prévisualiser le site public</p>
+        </a>
+    </div>
+
+    <!-- Commentaires récents -->
+    <div class="comments-section">
+        <h2 class="section-title">Commentaires récents</h2>
+
+        <div class="comments-container">
+            <div>
+                {% if recent_comments is defined and recent_comments|length > 0 %}
+                    {% for comment in recent_comments|slice(0, 3) %}
+                        <div class="comment-card {{ comment.status }}">
+                            <div class="comment-header">
+                                <div class="comment-author">{{ comment.author }}</div>
+                                <span class="badge {% if comment.status == 'pending' %}badge-pending{% elseif comment.status == 'approved' %}badge-approved{% else %}badge-rejected{% endif %}">
+                                    {{ comment.status == 'pending' ? 'En attente' : (comment.status == 'approved' ? 'Approuvé' : 'Rejeté') }}
+                                </span>
+                            </div>
+                            <div class="comment-content">
+                                {{ comment.content|striptags|slice(0, 150) }}{% if comment.content|length > 150 %}...{% endif %}
+                            </div>
+                            <div class="comment-date">
+                                <i class="fas fa-clock"></i> {{ comment.createdAt|date('d/m/Y H:i') }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-comments">
+                        <i class="fas fa-comment-slash"></i>
+                        <h4>Aucun commentaire récent</h4>
+                        <p>Les commentaires récents apparaîtront ici lorsqu'ils seront postés.</p>
                     </div>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if recent_comments is defined and recent_comments|length > 3 %}
+                    {% for comment in recent_comments|slice(3, 3) %}
+                        <div class="comment-card {{ comment.status }}">
+                            <div class="comment-header">
+                                <div class="comment-author">{{ comment.author }}</div>
+                                <span class="badge {% if comment.status == 'pending' %}badge-pending{% elseif comment.status == 'approved' %}badge-approved{% else %}badge-rejected{% endif %}">
+                                    {{ comment.status == 'pending' ? 'En attente' : (comment.status == 'approved' ? 'Approuvé' : 'Rejeté') }}
+                                </span>
+                            </div>
+                            <div class="comment-content">
+                                {{ comment.content|striptags|slice(0, 150) }}{% if comment.content|length > 150 %}...{% endif %}
+                            </div>
+                            <div class="comment-date">
+                                <i class="fas fa-clock"></i> {{ comment.createdAt|date('d/m/Y H:i') }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="comments-actions">
+                    {% if pending_comments is defined and pending_comments > 0 %}
+                        <a href="{{ ea_url()
+                            .setController('App\\Controller\\Admin\\CommentCrudController')
+                            .setAction('index')
+                            .set('filters[status][comparison]', '=')
+                            .set('filters[status][value]', 'pending') }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Modérer les {{ pending_comments }} commentaires en attente
+                        </a>
+                    {% endif %}
+
+                    <a href="{{ ea_url().setController('App\\Controller\\Admin\\CommentCrudController').setAction('index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-comments"></i> Voir tous les commentaires
+                    </a>
                 </div>
             </div>
-            
-            <!-- Tu peux ajouter d'autres statistiques ici -->
         </div>
     </div>
-    
-    <div class="dashboard-quick-access mt-4">
-        <h2>Accès rapide</h2>
-        <div class="row mt-3">
-            <div class="col-md-3">
-                <a href="{{ ea_url().setController('App\\Controller\\Admin\\ArticleCrudController').setAction('new') }}" class="card text-decoration-none text-dark mb-3">
-                    <div class="card-body text-center">
-                        <i class="fa fa-newspaper fa-2x mb-3 text-primary"></i>
-                        <h5 class="card-title">Nouvel article</h5>
-                    </div>
-                </a>
-            </div>
-            
-            <div class="col-md-3">
-                <a href="{{ ea_url().setController('App\\Controller\\Admin\\PageCrudController').setAction('new') }}" class="card text-decoration-none text-dark mb-3">
-                    <div class="card-body text-center">
-                        <i class="fa fa-file fa-2x mb-3 text-primary"></i>
-                        <h5 class="card-title">Nouvelle page</h5>
-                    </div>
-                </a>
-            </div>
-            
-            <div class="col-md-3">
-                <a href="{{ ea_url().setController('App\\Controller\\Admin\\GalleryCrudController').setAction('new') }}" class="card text-decoration-none text-dark mb-3">
-                    <div class="card-body text-center">
-                        <i class="fa fa-images fa-2x mb-3 text-primary"></i>
-                        <h5 class="card-title">Nouvelle galerie</h5>
-                    </div>
-                </a>
-            </div>
-            
-            <div class="col-md-3">
-                <a href="{{ ea_url().setController('App\\Controller\\Admin\\ImageCrudController').setAction('new') }}" class="card text-decoration-none text-dark mb-3">
-                    <div class="card-body text-center">
-                        <i class="fa fa-image fa-2x mb-3 text-primary"></i>
-                        <h5 class="card-title">Nouvelle image</h5>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </div>
+</div>
 {% endblock %}
